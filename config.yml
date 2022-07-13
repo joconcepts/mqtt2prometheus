@@ -17,3 +17,43 @@ metrics:
       - topic: 'freeathome/ABB7F462B789/ch0003/idp0000'
         labels:
           switch: Fußbodenheizungspumpe
+  - name: thermostat_measured_temperature
+    description: 'Measured temperature of thermostat'
+    labels:
+      - device
+      - device_name
+      - room
+    label_mapping:
+      device_name:
+        regex_group: device
+        values:
+          'ABB700CF5F0A': Heizkörper
+          'ABB700CF5F16': Heizkörper
+          'ABB700CF61C4': Heizkörper
+          'ABB700CF6770': Heizkörper
+          'ABB700CF5FAC': Heizkörper Fenster
+          'ABB700CF656A': Heizkörper Tür
+      room:
+        regex_group: device
+        values:
+          'ABB700CF5F0A': Spielzimmer
+          'ABB700CF5F16': Lieselotte
+          'ABB700CF61C4': Kinderzimmer
+          'ABB700CF6770': Arbeitszimmer
+          'ABB700CF5FAC': Flur
+          'ABB700CF656A': Flur
+    topics:
+      - topic: '^freeathome/(?P<label__device>.*)/ch0000/odp0007$'
+        topic_regex: true
+        labels_regex: true
+
+#      - topic: 'freeathome/ABB7F62CC1FB/ch0000/odp0010'
+#        labels:
+#          device: ABB7F62CC1FB
+#          device_name: Fußbodenheizung
+#          room: Essbereich
+#      - topic: 'freeathome/ABB7F62CC1FF/ch0000/odp0010'
+#        labels:
+#          device: ABB7F62CC1FF
+#          device_name: Fußbodenheizung
+#          room: Bad
