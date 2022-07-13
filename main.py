@@ -53,6 +53,11 @@ class Exporter:
                     topic_regex = re.compile(topic['topic'])
                     matched = topic_regex.match(msg.topic)
                     if matched:
+                        if topic.get('blacklist'):
+                            blacklisted = matched.groupdict().get(f"label__{topic['blacklist']['regex_group']}")
+                            if blacklisted in topic['blacklist']['values']:
+                                continue
+
                         value = msg.payload.decode()
                         labels = {}
 
