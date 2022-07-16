@@ -2,6 +2,7 @@
 
 import paho.mqtt.client as mqtt
 import json
+import jsonpath_ng
 import time
 import threading
 import uuid
@@ -46,6 +47,14 @@ class Exporter:
                 'label_mapping': metric.get('label_mapping', {})
             }
 
+    def value_parse(self, value, config):
+        if config.get('json'):
+            json_data = json.loads(value)
+            out = jsonpath_ng.parse(config.get('json_path')).find(json_data)[0].value
+            return out
+        else:
+            return value
+
     def mqtt_handler(self, client, userdata, msg):
         for key, data in self.metrics.items():
             for topic in data['topics']:
@@ -58,7 +67,7 @@ class Exporter:
                             if blacklisted in topic['blacklist']['values']:
                                 continue
 
-                        value = msg.payload.decode()
+                        value = self.value_parse(msg.payload.decode(), topic)
                         labels = {}
 
                         for match_key, match_value in matched.groupdict().items():
@@ -80,7 +89,7 @@ class Exporter:
 
                 else:
                     if msg.topic == topic['topic']:
-                        value = msg.payload.decode()
+                        value = self.value_parse(msg.payload.decode(), topic)
                         data['prom'].labels(*(topic['labels'].values())).set(value)
 
 if __name__ == "__main__":

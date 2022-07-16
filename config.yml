@@ -1,60 +1,87 @@
+#mqtt:
+#  host: 192.168.1.32
+#  port: 1883
+#  user: mqtt
+#  password: mqtt
+#  topic: 'freeathome/#'
+#
+#metrics:
+#  - name: switch_state
+#    description: 'Power state of switch'
+#    labels:
+#      - switch
+#    topics:
+#      - topic: 'freeathome/60000F2F2779/ch0000/idp0000'
+#        labels:
+#          switch: Heizungspumpe
+#      - topic: 'freeathome/ABB7F462B789/ch0003/idp0000'
+#        labels:
+#          switch: Fußbodenheizungspumpe
+#  - name: thermostat_measured_temperature
+#    description: 'Measured temperature of thermostat'
+#    labels:
+#      - device
+#      - device_name
+#      - room
+#    label_mapping:
+#      device_name:
+#        regex_group: device
+#        values:
+#          'ABB700CF5F0A': Heizkörper
+#          'ABB700CF5F16': Heizkörper
+#          'ABB700CF61C4': Heizkörper
+#          'ABB700CF6770': Heizkörper
+#          'ABB700CF5FAC': Heizkörper Fenster
+#          'ABB700CF656A': Heizkörper Tür
+#          'ABB7F62CC1FB': Fußbodenheizung
+#          'ABB7F62CC1FF': Fußbodenheizung
+#      room:
+#        regex_group: device
+#        values:
+#          'ABB700CF5F0A': Spielzimmer
+#          'ABB700CF5F16': Lieselotte
+#          'ABB700CF61C4': Kinderzimmer
+#          'ABB700CF6770': Arbeitszimmer
+#          'ABB700CF5FAC': Flur
+#          'ABB700CF656A': Flur
+#          'ABB7F62CC1FB': Essbereich
+#          'ABB7F62CC1FF': Bad
+#    topics:
+#      - topic: '^freeathome/(?P<label__device>.*)/ch0000/odp0007$'
+#        topic_regex: true
+#        labels_regex: true
+#        blacklist:
+#          regex_group: device
+#          values:
+#            - 'ABB7F62CC1FB'
+#            - 'ABB7F62CC1FF'
+#      - topic: '^freeathome/(?P<label__device>.*)/ch0000/odp0010$'
+#        topic_regex: true
+#        labels_regex: true
+
 mqtt:
   host: 192.168.1.32
   port: 1883
   user: mqtt
   password: mqtt
-  topic: 'freeathome/#'
+  topic: 'zigbee2mqtt/#'
 
 metrics:
-  - name: switch_state
-    description: 'Power state of switch'
+  - name: temperature
+    description: 'Measured temperature of thermometer'
     labels:
-      - switch
+      - sensor
     topics:
-      - topic: 'freeathome/60000F2F2779/ch0000/idp0000'
-        labels:
-          switch: Heizungspumpe
-      - topic: 'freeathome/ABB7F462B789/ch0003/idp0000'
-        labels:
-          switch: Fußbodenheizungspumpe
-  - name: thermostat_measured_temperature
-    description: 'Measured temperature of thermostat'
+      - topic: '^zigbee2mqtt/(?P<label__sensor>(Schlafzimmer))$'
+        topic_regex: true
+        json: true
+        json_path: '$.temperature'
+  - name: humidity
+    description: 'Measured temperature of thermometer'
     labels:
-      - device
-      - device_name
-      - room
-    label_mapping:
-      device_name:
-        regex_group: device
-        values:
-          'ABB700CF5F0A': Heizkörper
-          'ABB700CF5F16': Heizkörper
-          'ABB700CF61C4': Heizkörper
-          'ABB700CF6770': Heizkörper
-          'ABB700CF5FAC': Heizkörper Fenster
-          'ABB700CF656A': Heizkörper Tür
-          'ABB7F62CC1FB': Fußbodenheizung
-          'ABB7F62CC1FF': Fußbodenheizung
-      room:
-        regex_group: device
-        values:
-          'ABB700CF5F0A': Spielzimmer
-          'ABB700CF5F16': Lieselotte
-          'ABB700CF61C4': Kinderzimmer
-          'ABB700CF6770': Arbeitszimmer
-          'ABB700CF5FAC': Flur
-          'ABB700CF656A': Flur
-          'ABB7F62CC1FB': Essbereich
-          'ABB7F62CC1FF': Bad
+      - sensor
     topics:
-      - topic: '^freeathome/(?P<label__device>.*)/ch0000/odp0007$'
+      - topic: '^zigbee2mqtt/(?P<label__sensor>(Schlafzimmer))$'
         topic_regex: true
-        labels_regex: true
-        blacklist:
-          regex_group: device
-          values:
-            - 'ABB7F62CC1FB'
-            - 'ABB7F62CC1FF'
-      - topic: '^freeathome/(?P<label__device>.*)/ch0000/odp0010$'
-        topic_regex: true
-        labels_regex: true
+        json: true
+        json_path: '$.humidity'
