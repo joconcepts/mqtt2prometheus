@@ -12,12 +12,12 @@ import sys
 from prometheus_client import start_http_server, Gauge
 
 class Client:
-    def __init__(self, host="", port="", user="", password="", topic=""):
+    def __init__(self, host="", port="", user="", password="", topics=[]):
         self.host = host
         self.port = port
         self.user = user
         self.password = password
-        self.topic = topic
+        self.topics = list(map(lambda t: tuple([t,0]), topics))
         self.uuid = str(uuid.uuid4())
 
     def connect(self, on_message):
@@ -30,7 +30,7 @@ class Client:
 
     def on_connect(self, client, userdata, flags, rc):
         print("Connected with result code "+str(rc))
-        client.subscribe(self.topic)
+        client.subscribe(self.topics)
 
 class Exporter:
     def __init__(self, metrics):
