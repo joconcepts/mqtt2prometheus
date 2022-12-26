@@ -58,39 +58,44 @@ class Exporter:
     def mqtt_handler(self, client, userdata, msg):
         for key, data in self.metrics.items():
             for topic in data['topics']:
-                if topic.get('topic_regex', False):
-                    topic_regex = re.compile(topic['topic'])
-                    matched = topic_regex.match(msg.topic)
-                    if matched:
-                        if topic.get('blacklist'):
-                            blacklisted = matched.groupdict().get(f"label__{topic['blacklist']['regex_group']}")
-                            if blacklisted in topic['blacklist']['values']:
-                                continue
+                try:
+                    if topic.get('topic_regex', False):
+                        topic_regex = re.compile(topic['topic'])
+                        matched = topic_regex.match(msg.topic)
+                        if matched:
+                            if topic.get('blacklist'):
+                                blacklisted = matched.groupdict().get(f"label__{topic['blacklist']['regex_group']}")
+                                if blacklisted in topic['blacklist']['values']:
+                                    continue
 
-                        value = self.value_parse(msg.payload.decode(), topic)
-                        labels = {}
+                            value = self.value_parse(msg.payload.decode(), topic)
+                            labels = {}
 
-                        for match_key, match_value in matched.groupdict().items():
-                            if match_key.startswith('label__'):
-                                labels[match_key.split('__')[1]] = match_value
+                            for match_key, match_value in matched.groupdict().items():
+                                if match_key.startswith('label__'):
+                                    labels[match_key.split('__')[1]] = match_value
 
-                        if data['label_mapping']:
-                            for label, label_config in data['label_mapping'].items():
-                                regex_group = label_config['regex_group']
-                                label_matched = matched[f"label__{regex_group}"]
-                                mapping = label_config['values'].get(label_matched)
-                                if not mapping:
-                                    next
-                                labels[label] = mapping
+                            if data['label_mapping']:
+                                for label, label_config in data['label_mapping'].items():
+                                    regex_group = label_config['regex_group']
+                                    label_matched = matched[f"label__{regex_group}"]
+                                    mapping = label_config['values'].get(label_matched)
+                                    if not mapping:
+                                        next
+                                    labels[label] = mapping
 
-                        if all(l is not None for l in list(labels.values())):
-                            data['prom'].labels(*labels.values()).set(value)
-                            
+                            if all(l is not None for l in list(labels.values())):
+                                data['prom'].labels(*labels.values()).set(value)
+                                
 
-                else:
-                    if msg.topic == topic['topic']:
-                        value = self.value_parse(msg.payload.decode(), topic)
-                        data['prom'].labels(*(topic['labels'].values())).set(value)
+                    else:
+                        if msg.topic == topic['topic']:
+                            value = self.value_parse(msg.payload.decode(), topic)
+                            data['prom'].labels(*(topic['labels'].values())).set(value)
+                except Exception as e:
+                    print(f"mqtt topic {msg.topic} has an error:")
+                    print(e)
+                    print(f"value: {msg.payload.decode()}")
 
 if __name__ == "__main__":
     config_file = sys.argv[1]
