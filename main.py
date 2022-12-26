@@ -47,13 +47,18 @@ class Exporter:
                 'label_mapping': metric.get('label_mapping', {})
             }
 
-    def value_parse(self, value, config):
+    def value_parse(self, value, config, topic):
         if config.get('json'):
             json_data = json.loads(value)
-            out = jsonpath_ng.parse(config.get('json_path')).find(json_data)[0].value
-            return out
-        else:
-            return value
+            try:
+                return jsonpath_ng.parse(config.get('json_path')).find(json_data)[0].value
+            except:
+                default = config.get('default', None)
+                if default is not None:
+                    print(f"{topic}: Value not parsable, using default - {value}") 
+                    return default
+                raise
+        return value
 
     def mqtt_handler(self, client, userdata, msg):
         for key, data in self.metrics.items():
@@ -68,7 +73,7 @@ class Exporter:
                                 if blacklisted in topic['blacklist']['values']:
                                     continue
 
-                            value = self.value_parse(msg.payload.decode(), topic)
+                            value = self.value_parse(msg.payload.decode(), topic, msg.topic)
                             labels = {}
 
                             for match_key, match_value in matched.groupdict().items():
@@ -90,10 +95,10 @@ class Exporter:
 
                     else:
                         if msg.topic == topic['topic']:
-                            value = self.value_parse(msg.payload.decode(), topic)
+                            value = self.value_parse(msg.payload.decode(), topic, msg.topic)
                             data['prom'].labels(*(topic['labels'].values())).set(value)
                 except Exception as e:
-                    print(f"mqtt topic {msg.topic} has an error:")
+                    print(f"mqtt topic {msg.topic} has an error (config {topic}):")
                     print(e)
                     print(f"value: {msg.payload.decode()}")
 
