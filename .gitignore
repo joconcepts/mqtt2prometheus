@@ -1,2 +1,5 @@
 *.swp
 __pycache__
+config*.yml
+venv
+.DS_Store
