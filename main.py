@@ -44,8 +44,7 @@ class Exporter:
                 'prom': Gauge(name, description, labels),
                 'topics': metric['topics'],
                 'labels': labels,
-                'label_mapping': metric.get('label_mapping', {}),
-                'cached': metric.get('cached', False)
+                'label_mapping': metric.get('label_mapping', {})
             }
 
     def value_parse(self, value, config, topic):
@@ -91,22 +90,13 @@ class Exporter:
                                     labels[label] = mapping
 
                             if all(l is not None for l in list(labels.values())):
-                                if data['cached'] == True:
-                                    data['cache'] = value
-                                    data['prom'].labels(*labels.values()) \
-                                        .set_function(lambda: data['cache'])
-                                else:
-                                    data['prom'].labels(*labels.values()).set(value)
+                                data['prom'].labels(*labels.values()).set(value)
+                                
 
                     else:
                         if msg.topic == topic['topic']:
                             value = self.value_parse(msg.payload.decode(), topic, msg.topic)
-                            if data['cached'] == True:
-                                data['cache'] = value
-                                data['prom'].labels(*(topic['labels'].values())) \
-                                        .set_function(lambda: data['cache'])
-                            else:
-                                data['prom'].labels(*(topic['labels'].values())).set(value)
+                            data['prom'].labels(*(topic['labels'].values())).set(value)
                 except Exception as e:
                     print(f"mqtt topic {msg.topic} has an error (config {topic}):")
                     print(e)
