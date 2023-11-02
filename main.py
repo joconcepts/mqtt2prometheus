@@ -49,13 +49,16 @@ class Exporter:
 
     def value_parse(self, value, config, topic):
         if config.get('json'):
+            default = config.get('default', None)
             json_data = json.loads(value)
             try:
-                return jsonpath_ng.parse(config.get('json_path')).find(json_data)[0].value
+                value = jsonpath_ng.parse(config.get('json_path')).find(json_data)[0].value
             except:
-                default = config.get('default', None)
+                value = None
+
+            if value is None:
                 if default is not None:
-                    print(f"{topic}: Value not parsable, using default - {value}") 
+                    print(f"{topic}: Value not parsable, using default - {value}")
                     return default
                 raise
         return value
