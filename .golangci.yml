@@ -1,0 +1,68 @@
+# Based on the samber/cc-skills-golang recommended config, trimmed to what this repo uses.
+version: "2"
+
+linters:
+  default: none
+  enable:
+    # correctness
+    - govet
+    - staticcheck
+    - unused
+    - errcheck
+    - errorlint
+    - nilerr
+    - forcetypeassert
+    - durationcheck
+    - reassign
+    # style
+    - gocritic
+    - revive
+    - whitespace
+    - misspell
+    - dupword
+    - predeclared
+    - errname
+    - asciicheck
+    # complexity
+    - gocyclo
+    - nestif
+    - funlen
+    # performance
+    - perfsprint
+    - unconvert
+    - ineffassign
+    # security
+    - gosec
+    - bidichk
+    - bodyclose
+    # logging
+    - sloglint
+    - loggercheck
+    # tests
+    - thelper
+    - usetesting
+    - paralleltest
+    # modernization & meta
+    - modernize
+    - intrange
+    - usestdlibvars
+    - exhaustive
+    - nolintlint
+  # Deliberately off: wsl_v5 (blank-line rules add noise, not clarity) and
+  # goconst (flags label names like "device" in readable test tables).
+
+  settings:
+    errcheck:
+      check-type-assertions: true
+    funlen:
+      lines: 120
+      statements: 80
+    gocyclo:
+      min-complexity: 13
+    nolintlint:
+      require-explanation: true
+      require-specific: true
+
+formatters:
+  enable:
+    - gofumpt
