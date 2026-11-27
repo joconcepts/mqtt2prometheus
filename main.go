@@ -309,7 +309,9 @@ func (r *rule) match(topic string, labelMap map[string]labelMapping) (prometheus
 	return labels, true
 }
 
-// value returns the raw payload as a number, or the first result of the jq expression.
+// value returns the raw payload as a number, or the first result of the jq
+// expression. jq gets the parsed JSON, or the trimmed text as a string when the
+// payload is not JSON (e.g. ON), so plain-text states can be mapped too.
 func (r *rule) value(payload []byte) (float64, error) {
 	if r.jq == nil {
 		return toFloat(strings.TrimSpace(string(payload)))
@@ -318,7 +320,7 @@ func (r *rule) value(payload []byte) (float64, error) {
 	var doc any
 	lenient := json.JoinOptions(jsontext.AllowDuplicateNames(true), jsontext.AllowInvalidUTF8(true))
 	if err := json.Unmarshal(payload, &doc, lenient); err != nil {
-		return 0, fmt.Errorf("payload is not JSON: %w", err)
+		doc = strings.TrimSpace(string(payload))
 	}
 	out, _ := r.jq.Run(doc).Next() // no result comes back as nil, like null
 	if err, isErr := out.(error); out == nil || isErr {

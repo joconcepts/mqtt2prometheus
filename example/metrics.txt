@@ -11,6 +11,10 @@ pump_running{pump="circulation"} 1
 # TYPE radiator_valve_percent gauge
 radiator_valve_percent{device="trv01",room="kitchen"} 35
 radiator_valve_percent{device="trv02",room="bedroom"} 0
+# HELP switch_on Switch state (1 = on)
+# TYPE switch_on gauge
+switch_on{switch="Fan"} 0
+switch_on{switch="Lamp"} 1
 # HELP thermostat_heating Thermostat is calling for heat (1 = heat)
 # TYPE thermostat_heating gauge
 thermostat_heating{thermostat="living_room"} 1

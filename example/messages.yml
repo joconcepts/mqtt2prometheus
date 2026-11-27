@@ -21,3 +21,9 @@
   payload: '{"contact":true,"battery":85}'
 - topic: home/weather
   payload: '{"temp_f":41}'
+- topic: stat/Lamp/POWER # plain text, not JSON
+  payload: 'ON'
+- topic: stat/Fan/POWER
+  payload: 'OFF'
+- topic: stat/Heater/POWER # unknown state: no default, skipped
+  payload: 'TOGGLE'

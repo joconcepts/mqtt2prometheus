@@ -1,6 +1,6 @@
 # mqtt2prometheus
 
-Subscribes to MQTT topics and exposes their values as Prometheus gauges. A YAML file decides which topics feed which metric and how labels and values are pulled out of topic names and JSON payloads.
+Subscribes to MQTT topics and exposes their values as Prometheus gauges. A YAML file decides which topics feed which metric and how labels and values are pulled out of topic names and payloads (JSON or plain text).
 
 ## Running
 
@@ -105,7 +105,7 @@ Every rule must produce exactly the metric's label names. This is checked at sta
 
 **Without `jq`**, the payload itself must be a number, e.g. `21.5` or `1`.
 
-**With `jq`**, the payload is parsed as JSON and the [jq](https://jqlang.org/manual/) expression runs on it. The first result is converted like this:
+**With `jq`**, the [jq](https://jqlang.org/manual/) expression runs on the payload. JSON payloads are parsed first. Anything else, such as a plain `ON`, reaches jq as a string (with surrounding whitespace trimmed), so `.` is the text itself. The first result is converted like this:
 
 | jq result | Value |
 |---|---|
@@ -130,6 +130,12 @@ jq: '.contact | not'                            # invert a boolean (contact=true
 jq: '.battery < 20'                             # threshold to 1/0
 jq: '(.temp_f - 32) * 5 / 9'                    # unit conversion
 jq: '.power // .ENERGY.Power'                   # fall back to another field
+
+# plain-text payloads (. is the whole payload as a string)
+jq: '{"ON": 1, "OFF": 0}[.]'                    # ON/OFF to 1/0, anything else is skipped
+jq: '. == "online"'                             # availability topics
+jq: 'ascii_downcase | IN("open", "opened")'     # several spellings to 1
+jq: 'ltrimstr("T=") | tonumber'                 # number inside text, e.g. T=21.5
 ```
 
 **`default`** fills in when the field is missing or the mapping returns `null`:
@@ -141,8 +147,6 @@ jq: '.power // .ENERGY.Power'                   # fall back to another field
 ```
 
 Leave `default` out when a missing field should leave the last value in place. That's usually right for devices that send partial updates.
-
-Payloads that aren't JSON, such as a plain `ON`, can't go through jq. Without jq they must be numeric.
 
 ### Expiry
 
@@ -170,6 +174,8 @@ Expired series disappear from `/metrics`, so Prometheus shows a gap and `absent(
 | `zigbee2mqtt/Office Thermostat` | `{"local_temperature":21}` | `thermostat_heating{thermostat="office"} 0` (default) |
 | `zigbee2mqtt/Window Kitchen` | `{"contact":false,…}` | `window_open{window="Kitchen"} 1` |
 | `home/weather` | `{"temp_f":41}` | `outdoor_temperature_celsius 5` |
+| `stat/Lamp/POWER` | `ON` (plain text) | `switch_on{switch="Lamp"} 1` |
+| `stat/Heater/POWER` | `TOGGLE` | skipped: not in the jq map, no `default` |
 
 `go test` checks this output, so the example stays correct. After changing the example, run `go test -update` to regenerate `metrics.txt`.
 

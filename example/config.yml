@@ -6,6 +6,7 @@ mqtt:
   topics:
     - 'home/#'
     - 'tele/+/SENSOR'
+    - 'stat/+/POWER'
     - 'zigbee2mqtt/#'
 
 metrics:
@@ -68,6 +69,14 @@ metrics:
     topics:
       - regex: '^zigbee2mqtt/Window (?P<window>.+)$'
         jq: '.contact | not'
+
+  # Plain-text payloads (not JSON) reach jq as a string.
+  - name: switch_on
+    description: 'Switch state (1 = on)'
+    labels: [switch]
+    topics:
+      - regex: '^stat/(?P<switch>[^/]+)/POWER$'
+        jq: '{"ON": 1, "OFF": 0}[.]'
 
   # jq can also do arithmetic.
   - name: outdoor_temperature_celsius
