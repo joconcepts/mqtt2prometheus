@@ -1,0 +1,78 @@
+mqtt:
+  host: localhost
+  port: 1883
+  user: exporter
+  password: secret
+  topics:
+    - 'home/#'
+    - 'tele/+/SENSOR'
+    - 'zigbee2mqtt/#'
+
+metrics:
+  # Exact topic, raw numeric payload, fixed labels.
+  - name: pump_running
+    description: 'Heating pump state (1 = running)'
+    labels: [pump]
+    topics:
+      - topic: home/boiler/pump
+        labels:
+          pump: circulation
+
+  # Regex topic: the named group becomes the "device" label, and label_map
+  # derives "room" from it. Devices missing from the map are skipped.
+  - name: radiator_valve_percent
+    description: 'Radiator valve opening'
+    labels: [device, room]
+    label_map:
+      room:
+        from: device
+        values:
+          trv01: kitchen
+          trv02: bedroom
+    topics:
+      - regex: '^home/valves/(?P<device>\w+)/position$'
+
+  # jq on a JSON payload. One regex covers every Tasmota plug except Garage.
+  # Series disappear 15 minutes after the plug stops reporting.
+  - name: power_watts
+    description: 'Current power draw'
+    labels: [plug]
+    expire: 15m
+    topics:
+      - regex: '^tele/(?P<plug>[^/]+)/SENSOR$'
+        jq: '.ENERGY.Power'
+        exclude:
+          plug: [Garage]
+
+  # Mapping strings to digits. "default" is used when the field is missing.
+  - name: thermostat_heating
+    description: 'Thermostat is calling for heat (1 = heat)'
+    labels: [thermostat]
+    topics:
+      - topic: 'zigbee2mqtt/Living Room Thermostat'
+        jq: '{"heat": 1, "idle": 0}[.running_state]'
+        default: 0
+        labels:
+          thermostat: living_room
+      - topic: 'zigbee2mqtt/Office Thermostat'
+        jq: '{"heat": 1, "idle": 0}[.running_state]'
+        default: 0
+        labels:
+          thermostat: office
+
+  # Booleans become 1/0. Contact sensors report contact=true when closed,
+  # so jq inverts it to get "open".
+  - name: window_open
+    description: 'Window is open (1 = open)'
+    labels: [window]
+    topics:
+      - regex: '^zigbee2mqtt/Window (?P<window>.+)$'
+        jq: '.contact | not'
+
+  # jq can also do arithmetic.
+  - name: outdoor_temperature_celsius
+    description: 'Outdoor temperature'
+    labels: []
+    topics:
+      - topic: home/weather
+        jq: '(.temp_f - 32) * 5 / 9'

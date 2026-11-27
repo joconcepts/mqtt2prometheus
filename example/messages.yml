@@ -1,0 +1,23 @@
+# Sample messages fed through config.yml by TestExample; metrics.txt is the result.
+- topic: home/boiler/pump
+  payload: '1'
+- topic: home/valves/trv01/position
+  payload: '35'
+- topic: home/valves/trv02/position
+  payload: '0'
+- topic: home/valves/trv99/position # not in label_map: skipped
+  payload: '80'
+- topic: tele/Desk/SENSOR
+  payload: '{"Time":"2026-11-27T21:00:00","ENERGY":{"Power":42,"Voltage":231}}'
+- topic: tele/Garage/SENSOR # excluded
+  payload: '{"ENERGY":{"Power":1200}}'
+- topic: zigbee2mqtt/Living Room Thermostat
+  payload: '{"running_state":"heat","local_temperature":19.5}'
+- topic: zigbee2mqtt/Office Thermostat # no running_state: default 0
+  payload: '{"local_temperature":21}'
+- topic: zigbee2mqtt/Window Kitchen
+  payload: '{"contact":false,"battery":90}'
+- topic: zigbee2mqtt/Window Bedroom
+  payload: '{"contact":true,"battery":85}'
+- topic: home/weather
+  payload: '{"temp_f":41}'

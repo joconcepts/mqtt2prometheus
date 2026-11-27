@@ -1,2 +1,6 @@
 *.swp
 __pycache__
+/config.yml
+/metrics.txt
+.DS_Store
+venv/

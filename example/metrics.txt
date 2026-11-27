@@ -1,0 +1,21 @@
+# HELP outdoor_temperature_celsius Outdoor temperature
+# TYPE outdoor_temperature_celsius gauge
+outdoor_temperature_celsius 5
+# HELP power_watts Current power draw
+# TYPE power_watts gauge
+power_watts{plug="Desk"} 42
+# HELP pump_running Heating pump state (1 = running)
+# TYPE pump_running gauge
+pump_running{pump="circulation"} 1
+# HELP radiator_valve_percent Radiator valve opening
+# TYPE radiator_valve_percent gauge
+radiator_valve_percent{device="trv01",room="kitchen"} 35
+radiator_valve_percent{device="trv02",room="bedroom"} 0
+# HELP thermostat_heating Thermostat is calling for heat (1 = heat)
+# TYPE thermostat_heating gauge
+thermostat_heating{thermostat="living_room"} 1
+thermostat_heating{thermostat="office"} 0
+# HELP window_open Window is open (1 = open)
+# TYPE window_open gauge
+window_open{window="Bedroom"} 0
+window_open{window="Kitchen"} 1
